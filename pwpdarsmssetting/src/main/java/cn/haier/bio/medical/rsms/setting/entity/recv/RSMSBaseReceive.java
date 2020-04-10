@@ -1,12 +1,12 @@
 package cn.haier.bio.medical.rsms.setting.entity.recv;
 
-public class RSMSRecvBaseEntity {
+public class RSMSBaseReceive {
     protected int commandType;
 
-    public RSMSRecvBaseEntity() {
+    public RSMSBaseReceive() {
     }
 
-    public RSMSRecvBaseEntity(int commandType) {
+    public RSMSBaseReceive(int commandType) {
         this.commandType = commandType;
     }
 

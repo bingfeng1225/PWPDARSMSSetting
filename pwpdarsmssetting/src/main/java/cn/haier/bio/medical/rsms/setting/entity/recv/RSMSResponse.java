@@ -1,9 +1,9 @@
 package cn.haier.bio.medical.rsms.setting.entity.recv;
 
-public class RSMSCommontResponseEntity extends RSMSRecvBaseEntity {
+public class RSMSResponse extends RSMSBaseReceive {
     private byte response;
 
-    public RSMSCommontResponseEntity() {
+    public RSMSResponse() {
 
     }
 

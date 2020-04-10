@@ -3,7 +3,7 @@ package cn.haier.bio.medical.rsms.setting.entity.recv;
 import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
 import cn.qd.peiwen.pwtools.ByteUtils;
 
-public class RSMSQueryModulesResponseEntity extends RSMSRecvBaseEntity {
+public class RSMSQueryModulesResponse extends RSMSBaseReceive {
     private byte[] mcu; //MCU识别码
     private byte[] mac; //WIFI MAC
     private String code;//BE码
@@ -15,7 +15,7 @@ public class RSMSQueryModulesResponseEntity extends RSMSRecvBaseEntity {
     private String wifiVersion;//Wifi软件版本
     private String moduleVersion;//模块软件版本
 
-    public RSMSQueryModulesResponseEntity() {
+    public RSMSQueryModulesResponse() {
         super(RSMSSettingTools.RSMS_RESPONSE_QUERY_MODULES);
     }
 

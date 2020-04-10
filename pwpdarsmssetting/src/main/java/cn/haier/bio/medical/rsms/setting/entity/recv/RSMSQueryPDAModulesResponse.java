@@ -3,11 +3,11 @@ package cn.haier.bio.medical.rsms.setting.entity.recv;
 import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
 import cn.qd.peiwen.pwtools.ByteUtils;
 
-public class RSMSQueryPDAModulesResponseEntity extends RSMSRecvBaseEntity {
+public class RSMSQueryPDAModulesResponse extends RSMSBaseReceive {
     private byte deviceType;
     private byte configType;
 
-    public RSMSQueryPDAModulesResponseEntity() {
+    public RSMSQueryPDAModulesResponse() {
         super(RSMSSettingTools.RSMS_RESPONSE_QUERY_PDA_MODULES);
     }
 

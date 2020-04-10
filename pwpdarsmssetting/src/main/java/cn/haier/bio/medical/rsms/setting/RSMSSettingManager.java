@@ -3,11 +3,11 @@ package cn.haier.bio.medical.rsms.setting;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSCommontResponseEntity;
-import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryModulesResponseEntity;
-import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryPDAModulesResponseEntity;
-import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSRecvBaseEntity;
-import cn.haier.bio.medical.rsms.setting.entity.send.RSMSSendBaseEntity;
+import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSResponse;
+import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryModulesResponse;
+import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryPDAModulesResponse;
+import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSBaseReceive;
+import cn.haier.bio.medical.rsms.setting.entity.send.RSMSBaseSend;
 import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
 import cn.qd.peiwen.pwlogger.PWLogger;
 import cn.qd.peiwen.pwsocket.client.PWSocketCilent;
@@ -101,7 +101,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
     @Override
     public void onSocketClientConnected(PWSocketCilent client) {
         PWLogger.d("" + client + " connected");
-        RSMSSendBaseEntity entity = new RSMSSendBaseEntity(RSMSSettingTools.RSMS_COMMAND_QUERY_PDA_MODULES);
+        RSMSBaseSend entity = new RSMSBaseSend(RSMSSettingTools.RSMS_COMMAND_QUERY_PDA_MODULES);
         client.writeAndFlush(entity);
         if(EmptyUtils.isNotEmpty(this.listener)){
             this.listener.get().onConnected();
@@ -148,21 +148,21 @@ public class RSMSSettingManager implements IPWSocketClientListener {
     @Override
     public void onSocketClientWriteTimeout(PWSocketCilent client, ChannelHandlerContext ctx) {
         PWLogger.d("" + client + " write timeout");
-        RSMSSendBaseEntity entity = new RSMSSendBaseEntity(RSMSSettingTools.RSMS_COMMAND_QUERY_MODULES);
+        RSMSBaseSend entity = new RSMSBaseSend(RSMSSettingTools.RSMS_COMMAND_QUERY_MODULES);
         client.writeAndFlush(entity);
     }
 
     @Override
     public void onSocketClientMessageReceived(PWSocketCilent client, ChannelHandlerContext ctx, Object msg) throws Exception {
         PWLogger.d("" + client + " message received");
-        RSMSRecvBaseEntity entity = (RSMSRecvBaseEntity) msg;
-        switch (((RSMSRecvBaseEntity) msg).getCommandType()) {
+        RSMSBaseReceive entity = (RSMSBaseReceive) msg;
+        switch (((RSMSBaseReceive) msg).getCommandType()) {
             case RSMSSettingTools.RSMS_RESPONSE_QUERY_MODULES: {
                 PWLogger.e(entity.toString());
                 break;
             }
             case RSMSSettingTools.RSMS_RESPONSE_QUERY_PDA_MODULES: {
-                RSMSQueryPDAModulesResponseEntity response = (RSMSQueryPDAModulesResponseEntity) entity;
+                RSMSQueryPDAModulesResponse response = (RSMSQueryPDAModulesResponse) entity;
                 if(response.getDeviceType() != (byte)0xA0){
                     if(EmptyUtils.isNotEmpty(this.listener)){
                         this.listener.get().onAModelConfigEntered();
@@ -190,7 +190,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
     @Override
     public void onSocketClientMessageEncode(PWSocketCilent client, ChannelHandlerContext ctx, Object msg, ByteBuf buffer) throws Exception {
         PWLogger.d("" + client + " message encode");
-        RSMSSendBaseEntity entity = (RSMSSendBaseEntity) msg;
+        RSMSBaseSend entity = (RSMSBaseSend) msg;
         buffer.writeBytes(RSMSSettingTools.HEADER, 0, RSMSSettingTools.HEADER.length); //帧头 2位
         byte[] buf = EmptyUtils.isEmpty(entity) ? new byte[0] : entity.packageSendMessage();
         //数据长度 = type(1) + cmd(1) + device(1) + entity(n) + check(1)
@@ -266,18 +266,18 @@ public class RSMSSettingManager implements IPWSocketClientListener {
             buffer.discardReadBytes();
             switch (type) {
                 case RSMSSettingTools.RSMS_RESPONSE_QUERY_MODULES: {
-                    RSMSQueryModulesResponseEntity entity = RSMSSettingTools.parseRSMSModulesEntity(data);
+                    RSMSQueryModulesResponse entity = RSMSSettingTools.parseRSMSModulesEntity(data);
                     out.add(entity);
                     break;
                 }
                 case RSMSSettingTools.RSMS_RESPONSE_QUERY_PDA_MODULES: {
-                    RSMSQueryPDAModulesResponseEntity entity = RSMSSettingTools.parseRSMSPDAModulesEntity(data);
+                    RSMSQueryPDAModulesResponse entity = RSMSSettingTools.parseRSMSPDAModulesEntity(data);
                     out.add(entity);
                     break;
                 }
                 case RSMSSettingTools.RSMS_RESPONSE_CONFIG_B_MODEL:
                 case RSMSSettingTools.RSMS_RESPONSE_CONFIG_A_MODEL: {
-                    RSMSCommontResponseEntity entity = RSMSSettingTools.parseRSMSResponseEntity(data);
+                    RSMSResponse entity = RSMSSettingTools.parseRSMSResponseEntity(data);
                     entity.setCommandType(type);
                     out.add(entity);
                     break;

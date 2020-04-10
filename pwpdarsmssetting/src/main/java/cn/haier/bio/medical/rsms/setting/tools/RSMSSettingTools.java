@@ -3,9 +3,9 @@ package cn.haier.bio.medical.rsms.setting.tools;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
-import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSCommontResponseEntity;
-import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryModulesResponseEntity;
-import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryPDAModulesResponseEntity;
+import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSResponse;
+import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryModulesResponse;
+import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryPDAModulesResponse;
 import cn.qd.peiwen.pwlogger.PWLogger;
 import cn.qd.peiwen.pwtools.EmptyUtils;
 import io.netty.buffer.ByteBuf;
@@ -101,11 +101,11 @@ public class RSMSSettingTools {
         return -1;
     }
 
-    public static RSMSQueryModulesResponseEntity parseRSMSModulesEntity(byte[] data) {
+    public static RSMSQueryModulesResponse parseRSMSModulesEntity(byte[] data) {
         ByteBuf buffer = Unpooled.copiedBuffer(data);
         buffer.skipBytes(6);
 
-        RSMSQueryModulesResponseEntity entity = new RSMSQueryModulesResponseEntity();
+        RSMSQueryModulesResponse entity = new RSMSQueryModulesResponse();
         byte[] mcu = new byte[12];
         buffer.readBytes(mcu, 0, mcu.length);
         entity.setMcu(mcu);
@@ -128,19 +128,19 @@ public class RSMSSettingTools {
         return entity;
     }
 
-    public static RSMSQueryPDAModulesResponseEntity parseRSMSPDAModulesEntity(byte[] data) {
+    public static RSMSQueryPDAModulesResponse parseRSMSPDAModulesEntity(byte[] data) {
         ByteBuf buffer = Unpooled.copiedBuffer(data);
         buffer.skipBytes(6);
-        RSMSQueryPDAModulesResponseEntity entity = new RSMSQueryPDAModulesResponseEntity();
+        RSMSQueryPDAModulesResponse entity = new RSMSQueryPDAModulesResponse();
         entity.setDeviceType(buffer.readByte());
         entity.setConfigType(buffer.readByte());
         return entity;
     }
 
-    public static RSMSCommontResponseEntity parseRSMSResponseEntity(byte[] data) {
+    public static RSMSResponse parseRSMSResponseEntity(byte[] data) {
         ByteBuf buffer = Unpooled.copiedBuffer(data);
         buffer.skipBytes(6);
-        RSMSCommontResponseEntity entity = new RSMSCommontResponseEntity();
+        RSMSResponse entity = new RSMSResponse();
         entity.setResponse(buffer.readByte());
         return entity;
     }

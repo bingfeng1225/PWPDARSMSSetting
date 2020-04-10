@@ -4,12 +4,12 @@ import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-public class RSMSAModelConfigEntity extends RSMSSendBaseEntity {
+public class RSMSAModelConfig extends RSMSBaseSend {
     private String code;
     private String username;
     private String password;
 
-    public RSMSAModelConfigEntity() {
+    public RSMSAModelConfig() {
         super(RSMSSettingTools.RSMS_COMMAND_CONFIG_A_MODEL);
     }
 
