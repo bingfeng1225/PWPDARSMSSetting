@@ -1,7 +1,6 @@
 package cn.haier.bio.medical.rsms.setting.entity.recv;
 
 import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
-import cn.qd.peiwen.pwtools.ByteUtils;
 
 public class RSMSQueryModulesResponse extends RSMSBaseReceive {
     private byte[] mcu; //MCU识别码
@@ -102,8 +101,8 @@ public class RSMSQueryModulesResponse extends RSMSBaseReceive {
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("MCU识别码：" + ByteUtils.bytes2HexString(mcu) + "\n");
-        buffer.append("WIFI MAC：" + ByteUtils.bytes2HexString(mac) + "\n");
+        buffer.append("MCU识别码：" + RSMSSettingTools.bytes2HexString(mcu) + "\n");
+        buffer.append("WIFI MAC：" + RSMSSettingTools.bytes2HexString(mac) + "\n");
         buffer.append("BE码：" + this.code + "\n");
         buffer.append("IMEI号：" + this.imei + "\n");
         buffer.append("ICCID号：" + this.iccid + "\n");

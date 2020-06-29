@@ -9,8 +9,6 @@ import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryPDAModulesResponse
 import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSBaseReceive;
 import cn.haier.bio.medical.rsms.setting.entity.send.RSMSBaseSend;
 import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
-import cn.qd.peiwen.pwtools.ByteUtils;
-import cn.qd.peiwen.pwtools.EmptyUtils;
 import cn.qd.peiwen.socket.IPWSocketClientListener;
 import cn.qd.peiwen.socket.PWSocketCilent;
 import io.netty.buffer.ByteBuf;
@@ -38,7 +36,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
     }
 
     public void init() {
-        if (EmptyUtils.isEmpty(this.client)) {
+        if (this.client == null) {
             this.client = new PWSocketCilent("RSMSSettingManager");
             this.client.setHost("192.168.7.1");
             this.client.setPort(9998);
@@ -52,19 +50,19 @@ public class RSMSSettingManager implements IPWSocketClientListener {
 
 
     public void enable() {
-        if (EmptyUtils.isNotEmpty(this.client)) {
+        if (null != this.client) {
             this.client.enable();
         }
     }
 
     public void disable() {
-        if (EmptyUtils.isNotEmpty(this.client)) {
+        if (null != this.client) {
             this.client.disable();
         }
     }
 
     public void release() {
-        if (EmptyUtils.isNotEmpty(this.client)) {
+        if (null != this.client) {
             this.client.disable();
             this.client.release();
             this.client = null;
@@ -72,13 +70,13 @@ public class RSMSSettingManager implements IPWSocketClientListener {
     }
 
     public void write(Object msg) {
-        if (EmptyUtils.isNotEmpty(this.client)) {
+        if (null != this.client) {
             this.client.write(msg);
         }
     }
 
     public void writeAndFlush(Object msg) {
-        if (EmptyUtils.isNotEmpty(this.client)) {
+        if (null != this.client) {
             this.client.writeAndFlush(msg);
         }
     }
@@ -88,7 +86,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
     }
 
     private void loggerPrint(String message) {
-        if(EmptyUtils.isNotEmpty(this.listener)){
+        if(null != this.listener && null != this.listener.get()){
             this.listener.get().onLoggerPrint(message);
         }
     }
@@ -108,7 +106,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
         this.loggerPrint("" + client + " connected");
         RSMSBaseSend entity = new RSMSBaseSend(RSMSSettingTools.RSMS_COMMAND_QUERY_PDA_MODULES);
         client.writeAndFlush(entity);
-        if(EmptyUtils.isNotEmpty(this.listener)){
+        if(null != this.listener && null != this.listener.get()){
             this.listener.get().onConnected();
         }
     }
@@ -136,7 +134,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
 
     @Override
     public void onSocketClientExceptionCaught(PWSocketCilent client, Throwable throwable) {
-        if(EmptyUtils.isNotEmpty(this.listener)){
+        if(null != this.listener && null != this.listener.get()){
             this.listener.get().onExceptionCaught(throwable);
         }
     }
@@ -172,11 +170,11 @@ public class RSMSSettingManager implements IPWSocketClientListener {
             case RSMSSettingTools.RSMS_RESPONSE_QUERY_PDA_MODULES: {
                 RSMSQueryPDAModulesResponse response = (RSMSQueryPDAModulesResponse) entity;
                 if(response.getDeviceType() != (byte)0xA0){
-                    if(EmptyUtils.isNotEmpty(this.listener)){
+                    if(null != this.listener && null != this.listener.get()){
                         this.listener.get().onAModelConfigEntered();
                     }
                 }else{
-                    if(EmptyUtils.isNotEmpty(this.listener)){
+                    if(null != this.listener && null != this.listener.get()){
                         this.listener.get().onBModelConfigEntered();
                     }
                 }
@@ -184,7 +182,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
             }
             case RSMSSettingTools.RSMS_RESPONSE_CONFIG_A_MODEL:
             case RSMSSettingTools.RSMS_RESPONSE_CONFIG_B_MODEL: {
-                if(EmptyUtils.isNotEmpty(this.listener)){
+                if(null != this.listener && null != this.listener.get()){
                     this.listener.get().onConfigSuccessed();
                 }
                 client.disable();
@@ -200,7 +198,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
         this.loggerPrint("" + client + " message encode");
         RSMSBaseSend entity = (RSMSBaseSend) msg;
         buffer.writeBytes(RSMSSettingTools.HEADER, 0, RSMSSettingTools.HEADER.length); //帧头 2位
-        byte[] buf = EmptyUtils.isEmpty(entity) ? new byte[0] : entity.packageSendMessage();
+        byte[] buf = (entity == null) ? new byte[0] : entity.packageSendMessage();
         //数据长度 = type(1) + cmd(1) + device(1) + entity(n) + check(1)
         buffer.writeShort(4 + buf.length); //长度 2位
         buffer.writeShort(entity.getCommandType());   //2位
@@ -216,7 +214,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
         byte[] data = new byte[buffer.readableBytes()];
         buffer.readBytes(data, 0, data.length);
         buffer.resetReaderIndex();
-        this.loggerPrint("RSMS Send:" + ByteUtils.bytes2HexString(data, true, ", "));
+        this.loggerPrint("RSMS Send:" + RSMSSettingTools.bytes2HexString(data, true, ", "));
     }
 
     @Override
@@ -230,7 +228,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                     byte[] data = new byte[buffer.readableBytes()];
                     buffer.readBytes(data, 0, data.length);
                     buffer.discardReadBytes();
-                    this.loggerPrint("缓冲区内的数据超过256，且不包含正常数据头，丢弃全部：" + ByteUtils.bytes2HexString(data));
+                    this.loggerPrint("缓冲区内的数据超过256，且不包含正常数据头，丢弃全部：" + RSMSSettingTools.bytes2HexString(data));
                 }
                 break;
             }
@@ -239,7 +237,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                 byte[] data = new byte[headerIndex];
                 buffer.readBytes(data, 0, headerIndex);
                 buffer.discardReadBytes();
-                this.loggerPrint("丢弃帧头前不合法数据：" + ByteUtils.bytes2HexString(data));
+                this.loggerPrint("丢弃帧头前不合法数据：" + RSMSSettingTools.bytes2HexString(data));
                 continue;
             }
             //长度监测
@@ -269,7 +267,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                 this.loggerPrint("校验和不匹配，丢弃帧头，查找下一帧数据");
                 continue;
             }
-            this.loggerPrint("RSMS Recv:" + ByteUtils.bytes2HexString(data, true, ", "));
+            this.loggerPrint("RSMS Recv:" + RSMSSettingTools.bytes2HexString(data, true, ", "));
             short type = buffer.getShort(4);
             buffer.discardReadBytes();
             switch (type) {
@@ -291,8 +289,8 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                     break;
                 }
                 default:
-                    byte[] bytes = ByteUtils.short2Bytes((short) type);
-                    this.loggerPrint("指令" + ByteUtils.bytes2HexString(bytes, true) + "暂不支持");
+                    byte[] bytes = RSMSSettingTools.short2Bytes(type);
+                    this.loggerPrint("指令" + RSMSSettingTools.bytes2HexString(bytes, true) + "暂不支持");
                     break;
             }
         }

@@ -1,7 +1,6 @@
 package cn.haier.bio.medical.rsms.setting.entity.recv;
 
 import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
-import cn.qd.peiwen.pwtools.ByteUtils;
 
 public class RSMSQueryPDAModulesResponse extends RSMSBaseReceive {
     private byte deviceType;
@@ -30,8 +29,8 @@ public class RSMSQueryPDAModulesResponse extends RSMSBaseReceive {
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("设备类型：" + ByteUtils.bytes2HexString(new byte[]{this.deviceType}) + "\n");
-        buffer.append("配置类型：" + ByteUtils.bytes2HexString(new byte[]{this.configType}) + "\n");
+        buffer.append("设备类型：" + RSMSSettingTools.bytes2HexString(new byte[]{this.deviceType}) + "\n");
+        buffer.append("配置类型：" + RSMSSettingTools.bytes2HexString(new byte[]{this.configType}) + "\n");
         return buffer.toString();
     }
 }
