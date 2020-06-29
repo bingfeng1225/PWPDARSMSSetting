@@ -9,11 +9,10 @@ import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryPDAModulesResponse
 import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSBaseReceive;
 import cn.haier.bio.medical.rsms.setting.entity.send.RSMSBaseSend;
 import cn.haier.bio.medical.rsms.setting.tools.RSMSSettingTools;
-import cn.qd.peiwen.pwlogger.PWLogger;
-import cn.qd.peiwen.pwsocket.client.PWSocketCilent;
-import cn.qd.peiwen.pwsocket.client.listener.IPWSocketClientListener;
 import cn.qd.peiwen.pwtools.ByteUtils;
 import cn.qd.peiwen.pwtools.EmptyUtils;
+import cn.qd.peiwen.socket.IPWSocketClientListener;
+import cn.qd.peiwen.socket.PWSocketCilent;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
@@ -88,19 +87,25 @@ public class RSMSSettingManager implements IPWSocketClientListener {
         this.listener = new WeakReference<>(listener);
     }
 
+    private void loggerPrint(String message) {
+        if(EmptyUtils.isNotEmpty(this.listener)){
+            this.listener.get().onLoggerPrint(message);
+        }
+    }
+
     @Override
     public void onSocketClientInitialized(PWSocketCilent client) {
-        PWLogger.d("" + client + " initialized");
+        this.loggerPrint("" + client + " initialized");
     }
 
     @Override
     public void onSocketClientConnecting(PWSocketCilent client) {
-        PWLogger.d("" + client + " connecting");
+        this.loggerPrint("" + client + " connecting");
     }
 
     @Override
     public void onSocketClientConnected(PWSocketCilent client) {
-        PWLogger.d("" + client + " connected");
+        this.loggerPrint("" + client + " connected");
         RSMSBaseSend entity = new RSMSBaseSend(RSMSSettingTools.RSMS_COMMAND_QUERY_PDA_MODULES);
         client.writeAndFlush(entity);
         if(EmptyUtils.isNotEmpty(this.listener)){
@@ -110,23 +115,30 @@ public class RSMSSettingManager implements IPWSocketClientListener {
 
     @Override
     public void onSocketClientDisconnecting(PWSocketCilent client) {
-        PWLogger.d("" + client + " disconnecting");
+        this.loggerPrint("" + client + " disconnecting");
     }
 
     @Override
     public void onSocketClientDisconnected(PWSocketCilent client) {
-        PWLogger.d("" + client + " disconnected");
+        this.loggerPrint("" + client + " disconnected");
         this.listener.get().onDisconnected();
     }
 
     @Override
     public void onSocketClientReleaseing(PWSocketCilent client) {
-        PWLogger.d("" + client + " releaseing");
+        this.loggerPrint("" + client + " releaseing");
     }
 
     @Override
     public void onSocketClientReleased(PWSocketCilent client) {
-        PWLogger.d("" + client + " released");
+        this.loggerPrint("" + client + " released");
+    }
+
+    @Override
+    public void onSocketClientExceptionCaught(PWSocketCilent client, Throwable throwable) {
+        if(EmptyUtils.isNotEmpty(this.listener)){
+            this.listener.get().onExceptionCaught(throwable);
+        }
     }
 
     @Override
@@ -141,26 +153,22 @@ public class RSMSSettingManager implements IPWSocketClientListener {
 
     @Override
     public void onSocketClientReadTimeout(PWSocketCilent client, ChannelHandlerContext ctx) {
-        PWLogger.d("" + client + " read timeout");
+        this.loggerPrint("" + client + " read timeout");
         this.disable();
     }
 
     @Override
     public void onSocketClientWriteTimeout(PWSocketCilent client, ChannelHandlerContext ctx) {
-        PWLogger.d("" + client + " write timeout");
+        this.loggerPrint("" + client + " write timeout");
         RSMSBaseSend entity = new RSMSBaseSend(RSMSSettingTools.RSMS_COMMAND_QUERY_MODULES);
         client.writeAndFlush(entity);
     }
 
     @Override
     public void onSocketClientMessageReceived(PWSocketCilent client, ChannelHandlerContext ctx, Object msg) throws Exception {
-        PWLogger.d("" + client + " message received");
+        this.loggerPrint("" + client + " message received");
         RSMSBaseReceive entity = (RSMSBaseReceive) msg;
         switch (((RSMSBaseReceive) msg).getCommandType()) {
-            case RSMSSettingTools.RSMS_RESPONSE_QUERY_MODULES: {
-                PWLogger.e(entity.toString());
-                break;
-            }
             case RSMSSettingTools.RSMS_RESPONSE_QUERY_PDA_MODULES: {
                 RSMSQueryPDAModulesResponse response = (RSMSQueryPDAModulesResponse) entity;
                 if(response.getDeviceType() != (byte)0xA0){
@@ -189,7 +197,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
 
     @Override
     public void onSocketClientMessageEncode(PWSocketCilent client, ChannelHandlerContext ctx, Object msg, ByteBuf buffer) throws Exception {
-        PWLogger.d("" + client + " message encode");
+        this.loggerPrint("" + client + " message encode");
         RSMSBaseSend entity = (RSMSBaseSend) msg;
         buffer.writeBytes(RSMSSettingTools.HEADER, 0, RSMSSettingTools.HEADER.length); //帧头 2位
         byte[] buf = EmptyUtils.isEmpty(entity) ? new byte[0] : entity.packageSendMessage();
@@ -208,12 +216,12 @@ public class RSMSSettingManager implements IPWSocketClientListener {
         byte[] data = new byte[buffer.readableBytes()];
         buffer.readBytes(data, 0, data.length);
         buffer.resetReaderIndex();
-        PWLogger.d("RSMS Send:" + ByteUtils.bytes2HexString(data, true, ", "));
+        this.loggerPrint("RSMS Send:" + ByteUtils.bytes2HexString(data, true, ", "));
     }
 
     @Override
     public void onSocketClientMessageDecode(PWSocketCilent client, ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
-        PWLogger.d("" + client + " message decode");
+        this.loggerPrint("" + client + " message decode");
         while (buffer.readableBytes() > 4) {
             //帧头监测
             int headerIndex = RSMSSettingTools.indexOf(buffer, RSMSSettingTools.HEADER);
@@ -222,7 +230,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                     byte[] data = new byte[buffer.readableBytes()];
                     buffer.readBytes(data, 0, data.length);
                     buffer.discardReadBytes();
-                    PWLogger.d("缓冲区内的数据超过256，且不包含正常数据头，丢弃全部：" + ByteUtils.bytes2HexString(data));
+                    this.loggerPrint("缓冲区内的数据超过256，且不包含正常数据头，丢弃全部：" + ByteUtils.bytes2HexString(data));
                 }
                 break;
             }
@@ -231,7 +239,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                 byte[] data = new byte[headerIndex];
                 buffer.readBytes(data, 0, headerIndex);
                 buffer.discardReadBytes();
-                PWLogger.d("丢弃帧头前不合法数据：" + ByteUtils.bytes2HexString(data));
+                this.loggerPrint("丢弃帧头前不合法数据：" + ByteUtils.bytes2HexString(data));
                 continue;
             }
             //长度监测
@@ -247,7 +255,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                 //当前包尾位置错误 丢掉正常的包头以免重复判断
                 buffer.skipBytes(2);
                 buffer.discardReadBytes();
-                PWLogger.d("帧尾位置不匹配，丢弃帧头，查找下一帧数据");
+                this.loggerPrint("帧尾位置不匹配，丢弃帧头，查找下一帧数据");
                 continue;
             }
             buffer.markReaderIndex();
@@ -258,10 +266,10 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                 buffer.resetReaderIndex();
                 buffer.skipBytes(2);
                 buffer.discardReadBytes();
-                PWLogger.d("校验和不匹配，丢弃帧头，查找下一帧数据");
+                this.loggerPrint("校验和不匹配，丢弃帧头，查找下一帧数据");
                 continue;
             }
-            PWLogger.d("RSMS Recv:" + ByteUtils.bytes2HexString(data, true, ", "));
+            this.loggerPrint("RSMS Recv:" + ByteUtils.bytes2HexString(data, true, ", "));
             short type = buffer.getShort(4);
             buffer.discardReadBytes();
             switch (type) {
@@ -284,7 +292,7 @@ public class RSMSSettingManager implements IPWSocketClientListener {
                 }
                 default:
                     byte[] bytes = ByteUtils.short2Bytes((short) type);
-                    PWLogger.d("指令" + ByteUtils.bytes2HexString(bytes, true) + "暂不支持");
+                    this.loggerPrint("指令" + ByteUtils.bytes2HexString(bytes, true) + "暂不支持");
                     break;
             }
         }

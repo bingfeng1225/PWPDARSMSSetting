@@ -6,4 +6,6 @@ public interface IRSMSSettingListener {
     void onConfigSuccessed();
     void onAModelConfigEntered();
     void onBModelConfigEntered();
+    void onLoggerPrint(String message);
+    void onExceptionCaught(Throwable throwable);
 }

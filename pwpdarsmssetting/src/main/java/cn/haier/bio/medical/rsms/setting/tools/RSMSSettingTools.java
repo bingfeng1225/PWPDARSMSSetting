@@ -6,7 +6,6 @@ import java.util.Enumeration;
 import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSResponse;
 import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryModulesResponse;
 import cn.haier.bio.medical.rsms.setting.entity.recv.RSMSQueryPDAModulesResponse;
-import cn.qd.peiwen.pwlogger.PWLogger;
 import cn.qd.peiwen.pwtools.EmptyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -189,7 +188,7 @@ public class RSMSSettingTools {
             }
             return null;
         } catch (Exception e) {
-            PWLogger.e(e);
+            e.printStackTrace();
             return null;
         }
     }
