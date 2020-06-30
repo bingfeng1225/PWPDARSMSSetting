@@ -46,7 +46,7 @@ public class RSMSSettingTools {
     public static byte[] packageString(String src) {
         ByteBuf buffer = Unpooled.buffer(22);
         buffer.writeByte('\"');
-        if (null != src || src.length() > 0) {
+        if (null != src && src.length() > 0) {
             byte[] bytes = src.getBytes();
             buffer.writeBytes(bytes, 0, bytes.length);
         }
